@@ -391,6 +391,9 @@ choice BOARD_TYPE
     config BOARD_TYPE_XINGZHI_METAL_1_54_WIFI
         bool "Nologo Xingzhi Metal 1.54-inch Wi-Fi (无名科技星智)"
         depends on IDF_TARGET_ESP32S3
+    config BOARD_TYPE_XINGZHI_S3_WIFI
+        bool "Nologo Xingzhi S3 Wi-Fi (无名科技星智)"
+        depends on IDF_TARGET_ESP32S3
     config BOARD_TYPE_AI_VOX3
         bool "NullLab AI Vox V3"
         depends on IDF_TARGET_ESP32S3
