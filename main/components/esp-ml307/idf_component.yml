@@ -1,0 +1,15 @@
+dependencies:
+  espressif/mqtt:
+    matches:
+    - if: idf_version >=6.0
+    version: ^1.0.0
+  idf: '>=5.5.2'
+description: Vendored 78/esp-ml307 3.6.6 with XJ2113 patches and classic uart_driver (no UHCI) for old Cat.1 modules.
+files:
+  exclude:
+  - .git
+  - dist
+license: Apache-2.0
+repository: git://github.com/78/esp-ml307.git
+url: https://github.com/78/esp-ml307
+version: 3.6.6

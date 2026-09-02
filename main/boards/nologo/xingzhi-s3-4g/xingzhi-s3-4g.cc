@@ -8,6 +8,8 @@
 
 #include <esp_log.h>
 #include <driver/i2c_master.h>
+#include <driver/rtc_io.h>
+#include <esp_sleep.h>
 
 #define TAG "XINGZHI_S3_4G"
 
@@ -17,6 +19,14 @@ private:
     Button boot_button_;
     PowerSaveTimer* power_save_timer_;
     PowerManager* power_manager_;
+
+    void PowerOnModem() {
+        // 与 xingzhi-cube / metal 一致：拉高 GPIO21 给 4G 模组供电
+        rtc_gpio_init(NETWORK_MODULE_POWER_IN);
+        rtc_gpio_set_direction(NETWORK_MODULE_POWER_IN, RTC_GPIO_MODE_OUTPUT_ONLY);
+        rtc_gpio_set_level(NETWORK_MODULE_POWER_IN, 1);
+        ESP_LOGI(TAG, "4G modem power enabled (GPIO%d=1)", (int)NETWORK_MODULE_POWER_IN);
+    }
 
     void InitializePowerManager() {
         power_manager_ = new PowerManager(POWER_USB_IN);
@@ -34,6 +44,9 @@ private:
         power_save_timer_ = new PowerSaveTimer(-1, -1, 300);
         power_save_timer_->OnShutdownRequest([this]() {
             ESP_LOGI(TAG, "Shutting down");
+            // 关机前关掉 4G 供电，避免休眠漏电
+            rtc_gpio_set_level(NETWORK_MODULE_POWER_IN, 0);
+            rtc_gpio_hold_en(NETWORK_MODULE_POWER_IN);
             power_manager_->shutdown();
         });
         power_save_timer_->SetEnabled(true);
@@ -65,11 +78,19 @@ private:
 
 public:
     XINGZHI_S3_4G()
-        : Ml307Board(ML307_TX_PIN, ML307_RX_PIN), boot_button_(BOOT_BUTTON_GPIO) {
+        : Ml307Board(ML307_TX_PIN, ML307_RX_PIN, GPIO_NUM_NC), boot_button_(BOOT_BUTTON_GPIO) {
+        PowerOnModem();
         InitializePowerManager();
         InitializePowerSaveTimer();
         InitializeCodecI2c();
         InitializeButtons();
+    }
+
+    virtual void StartNetwork() override {
+        PowerOnModem();
+        // 对齐旧 Ml307Board：给模组上电后留出启动时间再探测
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        Ml307Board::StartNetwork();
     }
 
     virtual AudioCodec* GetAudioCodec() override {

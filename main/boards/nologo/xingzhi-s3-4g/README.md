@@ -5,8 +5,8 @@
 ## 硬件要点
 
 - 芯片：ESP32-S3
-- 网络：ML307 Cat.1 4G（TX `GPIO12` / RX `GPIO11`）
-- 音频：ES8311（I2S + I2C）
+- 网络：ML307 Cat.1 4G（TX `GPIO12` / RX `GPIO11`，供电使能 `GPIO21`）
+- 音频：ES8311（I2S + I2C；GPIO21 用于 4G 供电，PA 由 codec 内部控制）
 - 按键：BOOT `GPIO8`
 - 电源：USB/电池 ADC 检测，电源键关机控制
 
